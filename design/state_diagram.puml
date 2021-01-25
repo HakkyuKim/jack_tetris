@@ -1,0 +1,29 @@
+@startuml
+
+' Program changes state when one of the following happends:
+' 1 time unit passes
+' user types either L, R, or D keyboard
+' the block cannot move down
+' the new block cannot be created
+
+state "Generate tetris block" as G
+G: evaluate(tetris block generatable)
+state Running{
+    state "Wait" as W
+    W: listen(input)
+    W: if l, or r, rotate left, or right respectively
+    state "Check" as C
+    C: evaluate(tetris_block_at_bottom)
+    C: if true, calculate erasing blocks
+    C: if false, move the tetris block down by a single row
+}
+
+[*] --> G
+G --> [*] : [tetris_block_generatable = false]
+G --> W : [tetris_block_generatable = true]
+W --> W : l, r
+W --> C : 1t
+C --> G : [tetris_block_at_bottom = true]
+C --> W : [tetris_block_at_bottom = false]
+
+@enduml
