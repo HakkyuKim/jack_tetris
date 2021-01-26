@@ -1,0 +1,67 @@
+// The GameBoard represents the board of the tetris game
+// and holds a boolean value for each position
+
+class GameBoard {
+    field int mRowSz;
+    field int mColSz;
+    field Array board;
+
+    constructor GameBoard new(int rowSz, int colSz){
+        var int i;
+        let mRowSz = rowSz;
+        let mColSz = colSz;
+        let board = Array.new(rowSz);
+        let i = 0;
+        while(i < mRowSz){
+            let board[i] = Row.new(colSz);
+            let i = i + 1;
+        }
+        return this;
+    }
+
+    method void update(TetrisBlock tetrisBlock){
+        var int i, r, c;
+        var Array positions;
+        var Pair pair;
+        var Row line;
+        let positions = tetrisBlock.getPositions();
+        let i = 0;
+        while(i < 4){
+            let pair = positions[i];
+            let r = pair.getFirst();
+            let c = pair.getSecond();
+            let line = board[r];
+            do line.update(c, true);
+            let i = i + 1;
+        }
+        return;
+    }
+
+    // test method
+    method void printBoard(){
+        var int i, j;
+        var Row line;
+        let i = 0;
+        do Output.printInt(mRowSz);
+        do Output.printString(" ");
+        do Output.printInt(mColSz);
+        do Output.println();
+        while(i < mRowSz){
+            let j = 0;
+            while(j < mColSz) {
+                let line = board[i];
+                if(line.at(j)){
+                    do Output.printString("true");
+                }
+                else{
+                    do Output.printString("false");
+                }
+                do Output.printString(" ");
+                let j = j + 1;
+            }
+            do Output.println();
+            let i = i + 1;
+        }
+        return;
+    }
+}

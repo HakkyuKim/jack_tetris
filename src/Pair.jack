@@ -1,0 +1,27 @@
+class Pair {
+    field int mFirst;
+    field int mSecond;
+    
+    constructor Pair new(int first, int second){
+        let mFirst = first;
+        let mSecond = second;
+        return this;
+    }
+
+    method int getFirst(){
+        return mFirst;
+    }
+
+    method int getSecond(){
+        return mSecond;
+    }
+
+    // test method
+    method void printPair(){
+        do Output.printInt(mFirst);
+        do Output.printString(" ");
+        do Output.printInt(mSecond);
+        do Output.println();
+        return;
+    }
+}

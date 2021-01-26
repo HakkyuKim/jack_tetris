@@ -1,0 +1,30 @@
+class TetrisBlock {
+    field Array mPositions;
+
+    constructor TetrisBlock new(){
+        var int i;
+        let mPositions = Array.new(4);
+        let i = 0;
+        while(i < 4){
+            let mPositions[i] = Pair.new(i, 0);
+            let i = i + 1;
+        }
+        return this;
+    }
+
+    method Array getPositions(){
+        return mPositions;
+    }
+
+    method void printBlock(){
+        var int i;
+        var Pair pair;
+        let i = 0;
+        while(i < 4){
+            let pair = mPositions[i];
+            do pair.printPair();
+            let i = i + 1;
+        }
+        return;
+    }
+}

@@ -1,0 +1,34 @@
+class Main {
+    function void main() {
+        do Main.testGameBoard();
+        return;
+    }
+
+    function void testPair() {
+        var Pair pair;
+        let pair = Pair.new(3, 4);
+        do pair.printPair();
+        return;
+    }
+
+    function void testGameBoard() {
+        var GameBoard gameBoard;
+        var TetrisBlock tetrisBlock;
+        let gameBoard = GameBoard.new(10, 4);
+        let tetrisBlock = TetrisBlock.new();
+        do gameBoard.update(tetrisBlock);
+        do gameBoard.printBoard();
+        return;
+    }
+
+    function void testRow() {
+        return;
+    }
+
+    function void testTetrisBlock() {
+        var TetrisBlock tetrisBlock;
+        let tetrisBlock = TetrisBlock.new();
+        do tetrisBlock.printBlock();
+        return;
+    }
+}

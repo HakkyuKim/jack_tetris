@@ -1,0 +1,49 @@
+// Row refers to a single line in the tetris game.
+// It contains an Array of boolean values of size n
+
+class Row {
+    field Array line;
+    field int sz;
+
+    constructor Row new(int n){
+        var int i;
+        let sz = n;
+        let line = Array.new(sz);
+        let i = 0;
+        while(i < n){
+            let line[i] = false;
+            let i = i + 1;
+        }
+        return this;
+    }
+
+    method boolean at(int pos){
+        var boolean x;
+        let x = line[pos];
+        return x;
+    }
+
+    method void update(int pos, boolean val){
+        let line[pos] = val;
+        return;
+    }
+
+    // test method
+    method void testPrint(){
+        var int i;
+        let i = 0;
+        do Output.printInt(sz);
+        do Output.println();
+        while(i < sz){
+            if(line[i]){
+                do Output.printString("true");
+            }
+            else{
+                do Output.printString("false");
+            }
+            do Output.println();
+            let i = i + 1;
+        }
+        return;
+    }
+}
