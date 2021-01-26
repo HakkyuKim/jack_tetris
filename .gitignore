@@ -4,3 +4,17 @@ design/**/*.png
 # Utility programs, such as VMEmulator
 # can be downloaded at https://www.nand2tetris.org/software
 tools/
+
+# compiled jack code
+src/**/*.vm
+
+# except OS libraries
+!src/Array.vm
+!src/Keyboard.vm
+!src/Math.vm
+!src/Memory.vm
+!src/Output.vm
+!src/Screen.vm
+!src/String.vm
+!src/Sys.vm
+
