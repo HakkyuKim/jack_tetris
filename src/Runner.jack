@@ -1,0 +1,64 @@
+class Runner {
+    // the tetris game board
+    field GameBoard mGameBoard;
+    field char mKey;
+    field boolean mExit;
+
+    constructor Runner new(GameBoard gameBoard){
+        let mGameBoard = gameBoard;
+        return this;
+    }
+
+    method void keyInput(){
+        var int exitCode;
+        let exitCode = 0;
+        let mKey = Keyboard.keyPressed();
+        if(mKey = 131){
+            let exitCode = mGameBoard.moveTetris(0);
+        }
+        if(mKey = 133){
+            let exitCode = mGameBoard.moveTetris(2);
+        }
+        if(mKey = 130){
+            let exitCode = mGameBoard.moveTetris(3);
+        }
+        if(mKey = 132){
+            let exitCode = mGameBoard.moveTetris(1);
+        }
+        if(mKey = 136){
+            let exitCode = mGameBoard.moveTetris(4);
+        }
+        if(mKey = 137){
+            let exitCode = mGameBoard.moveTetris(5);
+        }
+        if(exitCode = 2){
+            let mExit = true;
+        }
+        if(mKey = 135){
+            let mExit = true;
+        }
+        return;
+    }
+
+    method void run(){
+        var int time;
+        let mExit = false;
+        do mGameBoard.initialize();
+
+        while(~mExit) {
+            let time = 0;
+            while(time < 3001){
+                do keyInput();
+                do Sys.wait(500);
+                let time = time + 500;
+            }
+            if(mGameBoard.moveTetris(2) = 2){
+                let mExit = true;
+            }
+        }
+
+        do Screen.clearScreen();
+        do Output.printString("Game Over!");
+        return;
+    }
+}

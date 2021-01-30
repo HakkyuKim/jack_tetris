@@ -1,67 +1,319 @@
-// The GameBoard represents the board of the tetris game
-// and holds a boolean value for each position
+// The GameBoard represents the board of the tetris game.
+// It holds a boolean value for each position, which indicates
+// the presence of a square block
 
 class GameBoard {
-    field int mRowSz;
-    field int mColSz;
+    // game board width
+    field int mWidth;
+    // game board height
+    field int mHeight;
     field Array board;
 
-    constructor GameBoard new(int rowSz, int colSz){
-        var int i;
-        let mRowSz = rowSz;
-        let mColSz = colSz;
-        let board = Array.new(rowSz);
-        let i = 0;
-        while(i < mRowSz){
-            let board[i] = Row.new(colSz);
-            let i = i + 1;
+    // the size of a single square block 
+    // that consists a tetris block
+    // the defualt value is 12
+    field int mBlockSize;
+
+    // the border width around the game board
+    field int mBorderWidth;
+
+    // the game board's x offset from the left viewport
+    field int mBaseX;
+    // the game board's y offset from the top viewport
+    field int mBaseY;
+
+    // the top most row that has a square
+    field int mTopRow;
+
+    field int mTetrisType;
+
+    // the current falling tetris
+    field TetrisBlock mFallingTetris;
+
+    constructor GameBoard new(int width, int height, int borderWidth){
+        var int y, x;
+        var Row line;
+        let mBlockSize = 12;
+        let mWidth = width;
+        let mHeight = height;
+
+        // Places the game board at the center.
+        let mBaseX = 256 - ((width*mBlockSize) + (2*borderWidth)/2);
+        let mBaseY = 10;
+        let mBorderWidth = borderWidth;
+        let mTopRow = mHeight;
+
+        let mTetrisType = 0;
+        let mFallingTetris = TetrisBlock.new(mTetrisType, this);
+        let mTetrisType = mTetrisType + 1;
+
+        // initialize board
+        let board = Array.new(height);
+        let y = 0;
+        while(y < height){
+            let board[y] = Row.new(mWidth);
+            let x = 0;
+            while(x < mWidth){
+                let line = board[y];
+                do line.update(x, false);
+                let x= x +1;
+            }
+            let y = y + 1;
         }
         return this;
     }
 
-    method void update(TetrisBlock tetrisBlock){
-        var int i, r, c;
-        var Array positions;
-        var Pair pair;
+    // inclusive
+    method int leftBorder(){
+        return 0;
+    }
+
+    // inclusive
+    method int rightBorder(){
+        return mWidth - 1;
+    }
+
+    // inclusive
+    method int topBorder(){
+        return 0;
+    }
+
+    // inclusive
+    method int bottomBorder(){
+        return mHeight - 1;
+    }
+
+    // moves the tetris to a given direction
+    // 0: up
+    // 1: right
+    // 2: down
+    // 3: left
+    // 4: rotate left
+    // 5: rotate right
+    method bool moveTetris(int direction){
+        var int success;
+        let success = 1;
+
+        // Erase the tetris from the board.
+        do updateTetrisBlock(mFallingTetris, false);
+
+        // Check if tetris can be moved.
+        if(direction = 0){
+            if(mFallingTetris.tryMoveUp()){
+                let success = 0;
+            }
+        }
+        if(direction = 2){
+            if(mFallingTetris.tryMoveDown()){
+                let success = 0;
+            }
+        }
+        if(direction = 3){
+            if(mFallingTetris.tryMoveLeft()){
+                let success = 0;
+            }
+        }
+        if(direction = 1){
+            if(mFallingTetris.tryMoveRight()){
+                let success = 0;
+            }
+        }
+        if(direction = 4){
+            if(mFallingTetris.tryRotateLeft()){
+                let success = 0;
+            }
+        }
+        if(direction = 5){
+            if(mFallingTetris.tryRotateRight()){
+                let success = 0;
+            }
+        }
+
+        // Redraw the tetris. If the move successed,
+        // it will draw to at the new position.
+        do updateTetrisBlock(mFallingTetris, true);
+
+        // If the tetris moves down, we must check if the tetris
+        // reached the bottom border or if it collided with another
+        // square.
+        if(direction = 2){
+            if(~(success = 0)){
+                do checkLines();
+                do drawBoard(0, mWidth, 0, mHeight);
+                
+                let mFallingTetris = TetrisBlock.new(mTetrisType, this);
+                let mTetrisType = mTetrisType + 1;
+                if(mTetrisType = 7){
+                    let mTetrisType = 0;
+                }
+                if(~checkCollision(mFallingTetris)){
+                    return 2;
+                }
+                do updateTetrisBlock(mFallingTetris, true);
+            }
+        }
+        return success;
+    }
+
+    method void updateTetrisBlock(TetrisBlock tetrisBlock, boolean color){
+        var int i, y, x;
+        var Array X;
+        var Array Y;
         var Row line;
-        let positions = tetrisBlock.getPositions();
+        let X = tetrisBlock.getX();
+        let Y = tetrisBlock.getY();
         let i = 0;
         while(i < 4){
-            let pair = positions[i];
-            let r = pair.getFirst();
-            let c = pair.getSecond();
-            let line = board[r];
-            do line.update(c, true);
+            let y = Y[i];
+            let x = X[i];
+            let line = board[y];
+            do line.update(x, color);
+            do drawBoard(x, x + 1, y, y + 1);
             let i = i + 1;
         }
         return;
     }
 
-    // test method
-    method void printBoard(){
-        var int i, j;
+    method void printBorder(int x, int y){
+        do Screen.setColor(true);
+        do Screen.drawRectangle(x, y, x + (mWidth*mBlockSize) + (2*mBorderWidth) - 1, y + (mHeight*mBlockSize) + (2*mBorderWidth) - 1);
+        do Screen.setColor(false);
+        do Screen.drawRectangle(x + mBorderWidth, y + mBorderWidth, x + (mWidth*mBlockSize) + mBorderWidth - 1, y + (mHeight*mBlockSize) + mBorderWidth - 1);
+        return;
+    }
+
+    method bool isLineFilled(int y){
+        var int x;
         var Row line;
-        let i = 0;
-        do Output.printInt(mRowSz);
-        do Output.printString(" ");
-        do Output.printInt(mColSz);
-        do Output.println();
-        while(i < mRowSz){
-            let j = 0;
-            while(j < mColSz) {
-                let line = board[i];
-                if(line.at(j)){
-                    do Output.printString("true");
-                }
-                else{
-                    do Output.printString("false");
-                }
-                do Output.printString(" ");
-                let j = j + 1;
+        var boolean value;
+        let line = board[y];
+        let x = 0;
+        while(x < mWidth){
+            let value = line.at(x);
+            if(~value){
+                return false;
             }
-            do Output.println();
+            let x = x + 1;
+        }
+        return true;
+    }
+
+    method void fillLine(int y, boolean color){
+        var int x;
+        var Row line;
+        let line = board[y];
+        let x = 0;
+        while(x < mWidth){
+            do line.update(x, color);
+            let x = x + 1;
+        }
+        return;
+    }
+
+    method void clearLine(int y){
+        do fillLine(y, false);
+        return;
+    }
+
+    method void moveLine(int srcY, int destY){
+        var int x;
+        var Row src, dest;
+        var boolean value;
+        // Don't need to copy if two rows have the same index.
+        if(srcY = destY){
+            return;
+        }
+        let src = board[srcY];
+        let dest = board[destY];
+        let x = 0;
+        while(x < mWidth){
+            let value = src.at(x);
+            do dest.update(x, value);
+            do src.update(x, false);
+            let x = x + 1;
+        }
+        return;
+    }
+
+    method boolean checkCollision(TetrisBlock tetrisBlock){
+        var int i, y, x;
+        var Array X;
+        var Array Y;
+        var Row line;
+        let X = tetrisBlock.getX();
+        let Y = tetrisBlock.getY();
+        let i = 0;
+        while(i < 4){
+            let y = Y[i];
+            let x = X[i];
+            if(at(x, y)){
+                return false;
+            }
             let i = i + 1;
         }
+        return true;
+    }
+
+    method void checkLines(){
+        var int srcY, destY;
+        let srcY = mHeight - 1;
+        let destY = mHeight - 1;
+        
+        let mTopRow = Math.min(mTopRow, mFallingTetris.topY());
+
+        // Beware!! the compiler evaluated '>' first
+        // Took like 3 hours to find this bug
+        while(srcY > (mTopRow - 1)){
+            if(isLineFilled(srcY)){
+                do clearLine(srcY);
+            }
+            else{
+                do moveLine(srcY, destY);
+                let destY = destY - 1;
+            }
+            let srcY = srcY - 1;
+        }
+        let mTopRow = destY + 1;
+        return;
+    }
+
+    method void initialize(){
+        do printBorder(mBaseX, mBaseY);
+        do updateTetrisBlock(mFallingTetris, true);
+        return;
+    }
+
+    method boolean at(int x, int y){
+        var boolean color;
+        var Row line;
+        let line = board[y];
+        let color = line.at(x);
+        return color;
+    }
+
+    // draw the game board in the following range
+    // x: [leftX, rightX) (right exclusive)
+    // y: [topY, boottomY) (bottom exclusive)
+    method void drawBoard(int leftX, int rightX, int topY, int bottomY){
+        var int x, y;
+        var Row line;
+        let y = topY;
+        while(y < bottomY){
+            let x = leftX;
+            while(x < rightX) {
+                let line = board[y];
+                if(line.at(x)){        
+                    do Screen.setColor(true);
+                }
+                else{
+                    do Screen.setColor(false);
+                }
+                do Screen.drawRectangle(mBaseX +  mBorderWidth + (x*mBlockSize), mBaseY + mBorderWidth + (y*mBlockSize), mBaseX +  mBorderWidth + ((x + 1)*mBlockSize) - 1, mBaseY +  mBorderWidth + ((y + 1)*mBlockSize) - 1);
+                let x = x + 1;
+            }
+            let y = y + 1;
+        }
+        do Screen.setColor(false);
         return;
     }
 }

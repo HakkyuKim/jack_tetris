@@ -256,4 +256,15 @@ class TetrisBlock {
     method Array getY(){
         return Y;
     }
+
+    method int topY(){
+        var int i, y;
+        let y = mGameBoard.bottomBorder();
+        let i = 0;
+        while(i < 4){
+            let y = Math.min(y, Y[i]);
+            let i = i + 1;
+        }
+        return y;
+    }
 }
