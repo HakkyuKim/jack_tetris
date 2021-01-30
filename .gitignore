@@ -1,6 +1,9 @@
 # compiled plantuml png files
 design/**/*.png
 
+# design doc folder
+design/
+
 # Utility programs, such as VMEmulator
 # can be downloaded at https://www.nand2tetris.org/software
 tools/
