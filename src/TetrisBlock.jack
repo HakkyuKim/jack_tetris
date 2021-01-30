@@ -1,30 +1,259 @@
 class TetrisBlock {
-    field Array mPositions;
+    // index of the rotation center
+    field int mCenterIdx;
 
-    constructor TetrisBlock new(){
-        var int i;
-        let mPositions = Array.new(4);
-        let i = 0;
-        while(i < 4){
-            let mPositions[i] = Pair.new(i, 0);
-            let i = i + 1;
-        }
+    // x coordinates from left to right
+    field Array X;
+    
+    // y coordinates from top to bottom
+    field Array Y;
+
+    // tetris type, see https://tetris.fandom.com/wiki/Tetromino
+    // for more details
+    // 0 : type I
+    // 1 : type J
+    // 2 : type L
+    // 3 : type O
+    // 4 : type S
+    // 5 : type T
+    // 6 : type Z
+    field int mType;
+
+    // the gameboard that the tetris moves on
+    field GameBoard mGameBoard;
+
+    constructor TetrisBlock new(int type, GameBoard gameBoard){
+        let X = Array.new(4);
+        let Y = Array.new(4);
+        let mGameBoard = gameBoard;
+        let mType = type;
+
+        do initializeByType(type);
+
         return this;
     }
 
-    method Array getPositions(){
-        return mPositions;
-    }
-
-    method void printBlock(){
-        var int i;
-        var Pair pair;
-        let i = 0;
-        while(i < 4){
-            let pair = mPositions[i];
-            do pair.printPair();
-            let i = i + 1;
+    method void initializeByType(int type){
+        // I
+        if(type = 0){
+            let mCenterIdx = 2;
+            let X[0] = 0;
+            let X[1] = 1;
+            let X[2] = 2;
+            let X[3] = 3;
+            let Y[0] = 0;
+            let Y[1] = 0;
+            let Y[2] = 0;
+            let Y[3] = 0;
+        }
+        // J
+        if(type = 1){
+            let mCenterIdx = 2;
+            let X[0] = 0;
+            let X[1] = 0;
+            let X[2] = 1;
+            let X[3] = 2;
+            let Y[0] = 0;
+            let Y[1] = 1;
+            let Y[2] = 1;
+            let Y[3] = 1;
+        }
+        // L
+        if(type = 2){
+            let mCenterIdx = 0;
+            let X[0] = 2;
+            let X[1] = 2;
+            let X[2] = 1;
+            let X[3] = 0;
+            let Y[0] = 0;
+            let Y[1] = 1;
+            let Y[2] = 1;
+            let Y[3] = 1;
+        }
+        // O
+        if(type = 3){
+            let mCenterIdx = 2;
+            let X[0] = 0;
+            let X[1] = 1;
+            let X[2] = 0;
+            let X[3] = 1;
+            let Y[0] = 0;
+            let Y[1] = 0;
+            let Y[2] = 1;
+            let Y[3] = 1;
+        }
+        // S
+        if(type = 4){
+            let mCenterIdx = 3;
+            let X[0] = 1;
+            let X[1] = 2;
+            let X[2] = 0;
+            let X[3] = 1;
+            let Y[0] = 0;
+            let Y[1] = 0;
+            let Y[2] = 1;
+            let Y[3] = 1;
+        }
+        // T
+        if(type = 5){
+            let mCenterIdx = 1;
+            let X[0] = 0;
+            let X[1] = 1;
+            let X[2] = 2;
+            let X[3] = 1;
+            let Y[0] = 0;
+            let Y[1] = 0;
+            let Y[2] = 0;
+            let Y[3] = 1;
+        }
+        // Z
+        if(type = 6){
+            let mCenterIdx = 2;
+            let X[0] = 0;
+            let X[1] = 1;
+            let X[2] = 1;
+            let X[3] = 2;
+            let Y[0] = 0;
+            let Y[1] = 0;
+            let Y[2] = 1;
+            let Y[3] = 1;
         }
         return;
+    }
+
+    method bool tryRotateLeft(){
+        if(checkLeftRoate(true)){
+            return true;
+        }
+        return false;
+    }
+
+    method bool tryRotateRight(){
+        if(checkLeftRoate(false)){
+            return true;
+        }
+        return false;
+    }
+
+    method bool tryMoveDown(){
+        if(canMove(0, 1)){
+            return true;
+        }
+        return false;
+    }
+
+    method bool tryMoveUp(){
+        if(canMove(0, -1)){
+            return true;
+        }
+        return false;
+    }
+
+    method bool tryMoveLeft(){
+        if(canMove(-1, 0)){
+            return true;
+        }
+        return false;
+    }
+
+    method bool tryMoveRight(){
+        if(canMove(1, 0)){
+            return true;
+        }
+        return false;
+    }
+
+    method bool canMove(int mx, int my){
+        var int i;
+        let i = 0;
+        while(i < 4){
+            // boundary check
+            if(X[i] + mx < mGameBoard.leftBorder()){
+                return false;
+            }
+            if(X[i] + mx > mGameBoard.rightBorder()){
+                return false;
+            }
+            if(Y[i] + my < mGameBoard.topBorder()){
+                return false;
+            }
+            if(Y[i] + my > mGameBoard.bottomBorder()){
+                return false;
+            }
+            // collision check
+            if(mGameBoard.at(X[i] + mx, Y[i] + my)){
+                return false;
+            }
+            let i = i + 1;
+        }
+        let i = 0;
+        while(i < 4){
+            let X[i] = X[i] + mx;
+            let Y[i] = Y[i] + my;
+            let i = i + 1;
+        }
+        return true;
+    }
+
+    // rotate left : (x, y) -> (y, -x)
+    // rotate right : (x, y) -> (-y, x)
+    // rotation center for each tetris is described here:
+    // https://tetris.fandom.com/wiki/Tetromino
+    method bool checkLeftRoate(bool left){
+        var int i, signX, signY, centerX, centerY, temp;
+        // O type tetris block can't rotate 
+        if(mType = 3){
+            return false;
+        }
+
+        // get roation center coordinates
+        let centerX = X[mCenterIdx];
+        let centerY = Y[mCenterIdx];
+        if(left){
+            let signX = 1;
+            let signY = -1;
+        } else{
+            let signX = -1;
+            let signY = 1;
+        }
+
+        let i = 0;
+        while(i < 4){
+            // boundary check
+            if(centerX+((Y[i] - centerY)*signX) < mGameBoard.leftBorder()){
+                return false;
+            }
+            if(centerX+((Y[i] - centerY)*signX) > mGameBoard.rightBorder()){
+                return false;
+            }
+            if(centerY +((X[i] - centerX)*signY) < mGameBoard.topBorder()){
+                return false;
+            }
+            if(centerY +((X[i] - centerX)*signY) > mGameBoard.bottomBorder()){
+                return false;
+            }
+
+            // collision check
+            if(mGameBoard.at(centerX+((Y[i] - centerY)*signX), centerY +((X[i] - centerX)*signY))){
+                return false;
+            }
+            let i = i + 1;
+        }
+        let i = 0;
+        while(i < 4){
+            let temp = Y[i];
+            let Y[i] = centerY + ((X[i] - centerX)*signY);
+            let X[i] = centerX + ((temp - centerY)*signX);
+            let i = i + 1;
+        }
+        return true;
+    }
+
+    method Array getX(){
+        return X;
+    }
+
+    method Array getY(){
+        return Y;
     }
 }
